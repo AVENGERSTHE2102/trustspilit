@@ -55,9 +55,19 @@ Open http://localhost:3000. SCRIPTED mode works without Ollama or an API key. LI
 
 ## Azure API deployment
 
-The deployed API runs FastAPI and `gemma3:1b` in one container. Ollama listens only on `127.0.0.1` inside that container. The Azure Container App uses a Consumption profile with scale to zero, so the first request after idle time may take longer. The public API supports SCRIPTED mode without a key; LIVE requests require an `X-Live-Token` header. The Anthropic key and live token are Azure Container App secrets, not repository files or frontend environment variables.
+API URL: https://trustsplit-api.kindbay-12c85e24.centralindia.azurecontainerapps.io
+
+The deployed API runs FastAPI and `gemma3:1b` in one container. Ollama listens only on `127.0.0.1` inside that container. The `trustsplit-api` Azure Container App is in `trustsplit-rg` and uses a Consumption profile with scale to zero, so the first request after idle time may take longer. The public API supports SCRIPTED mode without a key; LIVE requests require an `X-Live-Token` header. The Anthropic key and live token are Azure Container App secrets, not repository files or frontend environment variables. The local ignored `.env.azure` file holds the demo's live access token.
 
 To connect the local dashboard to a hosted API, set `NEXT_PUBLIC_API_URL` in `frontend/.env.local` to the API's HTTPS origin, restart Next.js, select LIVE, and enter the live access token in the input rail. The token is held in the tab's React state and is sent only with LIVE requests. The baseline still sends the synthetic raw corpus text to Anthropic for comparison; no tools execute.
+
+To redeploy the backend after a code change, build a new image tag and update the app:
+
+```sh
+cd backend
+az acr build --registry proactiveaditya20260904 --image trustsplit/api:<new-tag> --file Dockerfile .
+az containerapp update --name trustsplit-api --resource-group trustsplit-rg --image proactiveaditya20260904.azurecr.io/trustsplit/api:<new-tag>
+```
 
 ## API
 
