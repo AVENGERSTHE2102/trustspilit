@@ -60,10 +60,9 @@ def test_live_uses_two_independent_claude_proposals_and_screens_only_guarded_arm
         return main.ModelOutput(answer="Answer", proposal=action), main.Usage(input_tokens=12, output_tokens=5), 24, {"messages": [{"content": context}]}, {"content": [{"text": "raw completion"}]}
 
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    monkeypatch.setenv("LIVE_API_TOKEN", "test-token")
     monkeypatch.setattr(main, "local_guard", guard)
     monkeypatch.setattr(main, "claude_arm", claude)
-    result = asyncio.run(main.run(main.RunRequest(scenario_id=scenario["id"], mode="LIVE"), x_live_token="test-token"))
+    result = asyncio.run(main.run(main.RunRequest(scenario_id=scenario["id"], mode="LIVE")))
     assert len(calls) == 2
     assert calls[0] == ("baseline", scenario["untrusted"])
     assert calls[1] == ("guarded", scenario["sanitized_context"])

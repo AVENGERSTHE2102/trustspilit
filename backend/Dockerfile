@@ -12,15 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /service
-COPY pyproject.toml ./
-COPY app ./app
-RUN python3 -m venv /opt/venv && pip install --no-cache-dir .
-
 RUN set -eu; \
     ollama serve >/tmp/ollama-build.log 2>&1 & server_pid=$!; \
     for attempt in $(seq 1 30); do ollama list >/dev/null 2>&1 && break; sleep 1; done; \
     ollama pull gemma3:1b; \
     kill "$server_pid"; wait "$server_pid" || true
+
+COPY pyproject.toml ./
+COPY app ./app
+RUN python3 -m venv /opt/venv && pip install --no-cache-dir .
 
 EXPOSE 8000
 ENTRYPOINT []

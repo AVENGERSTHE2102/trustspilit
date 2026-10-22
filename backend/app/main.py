@@ -2,7 +2,6 @@ import asyncio
 import json
 import os
 import re
-import secrets
 import time
 import uuid
 from datetime import datetime, timezone
@@ -12,7 +11,7 @@ from typing import Any, Literal
 import httpx
 from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -337,7 +336,7 @@ async def run_case(raw_scenario: dict, mode: Literal["SCRIPTED", "LIVE"]) -> Cas
 
 
 @app.post("/api/run", response_model=RunResult)
-async def run(req: RunRequest, x_live_token: str | None = Header(default=None)):
+async def run(req: RunRequest):
     if req.scope == "scenario":
         if not req.scenario_id or req.scenario_id not in BY_ID:
             raise HTTPException(404, "Unknown or missing scenario")
@@ -345,9 +344,6 @@ async def run(req: RunRequest, x_live_token: str | None = Header(default=None)):
     else:
         selected = SCENARIOS
     if req.mode == "LIVE":
-        expected_token = os.getenv("LIVE_API_TOKEN")
-        if expected_token and not secrets.compare_digest(x_live_token or "", expected_token):
-            raise HTTPException(401, "LIVE mode requires a valid access token.")
         if not os.getenv("ANTHROPIC_API_KEY"):
             raise HTTPException(503, "LIVE mode requires ANTHROPIC_API_KEY.")
     run_id = str(uuid.uuid4())

@@ -46,11 +46,3 @@ def test_policy_api_rejects_caller_supplied_approved_plan():
     })
     assert response.status_code == 422
 
-
-def test_live_run_requires_access_token_when_configured(monkeypatch):
-    monkeypatch.setenv("LIVE_API_TOKEN", "test-token")
-    client = TestClient(app)
-    response = client.post("/api/run", json={"scenario_id": "readme-injection", "mode": "LIVE"})
-    assert response.status_code == 401
-    assert client.post("/api/run", json={"scenario_id": "readme-injection", "mode": "SCRIPTED"}).status_code == 200
-
